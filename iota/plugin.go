@@ -120,7 +120,9 @@ const attachToTangleCommand = "attachToTangle"
 var mu = sync.Mutex{}
 
 func (interc Interceptor) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
+  logger.Printf("Got Request: %s\n", r)
 	if r.Method != http.MethodPost {
+    logger.Printf("Forwarding, method %s\n", r.Method)
 		return interc.Next.ServeHTTP(w, r)
 	}
 
@@ -136,6 +138,7 @@ func (interc Interceptor) ServeHTTP(w http.ResponseWriter, r *http.Request) (int
 	command := &AttachToTangleReq{}
 	if err := json.Unmarshal(contents, command); err != nil {
 		// instead of aborting, send it further to IRI
+    logger.Printf("Forwarding, unable to unmarshal request\n")
 		return interc.Next.ServeHTTP(w, r)
 	}
 
@@ -144,6 +147,7 @@ func (interc Interceptor) ServeHTTP(w http.ResponseWriter, r *http.Request) (int
 
 	// only intercept attachToTangle command
 	if command.Command != attachToTangleCommand {
+    logger.Printf("Forwarding, command is %s\n", command.Command)
 		return interc.Next.ServeHTTP(w, r)
 	}
 
@@ -160,6 +164,7 @@ func (interc Interceptor) ServeHTTP(w http.ResponseWriter, r *http.Request) (int
 	txTrytes := command.Trytes
 
 	if len(txTrytes) == 0 {
+    logger.Printf("Forwarding, len(txTrytes) is 0\n")
 		return interc.Next.ServeHTTP(w, r)
 	}
 
